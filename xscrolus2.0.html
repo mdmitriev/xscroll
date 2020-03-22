@@ -1,0 +1,90 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<style>
+
+body,ul,ol,li,h1,h2,h3,h4,h5,h6,p,figure,form,input,button { margin: 0; padding: 0; }
+
+.section { min-height: 100vh; }
+
+.sticky {
+    position: -webkit-sticky;
+    position: sticky;
+    top: 0px;
+}
+.sticky .wrapper {
+    width: 100%;
+    overflow: hidden;
+}
+.sticky .wrapper .inner {
+    height: 100%;
+    display: flex;
+    flex-direction: row;
+}
+
+.sticky .wrapper .inner > * {
+    min-height: 100vh;
+    width: 100vw;
+    position: relative;
+    align-items: stretch;
+    flex-shrink: 0;
+}
+
+</style>
+ 
+</head>
+
+<body>
+	<div class="section">a1</div>
+    <div class="section" style="background:rgba(0,0,0,.1)">a2</div>
+    <div class="section" style="background:rgba(0,0,0,.2)">a3</div>
+    <div class="section">
+        <div class="sticky">
+            <div class="wrapper">
+                <div class="inner">
+                    <div style="background:rgba(255,0,0,.2)">b1</div>
+                    <div style="background:rgba(255,0,0,.3)">b2</div>
+                    <div style="background:rgba(255,0,0,.4)">b3</div>
+                </div>
+            </div>
+        </div>
+        <div class="spacer"></div>
+    </div>
+    <div class="section" style="background:rgba(0,0,0,.2)">c1</div>
+    <div class="section">c2</div>
+    
+    
+    <script>
+    
+        const inner = document.querySelector('.inner');
+        const innerParent = inner.closest('.section');
+        const spacer = document.querySelector('.spacer');
+        const innerChild = inner.children.length;
+        
+        scrollX = () => {
+        
+        	const innerTop = inner.getBoundingClientRect().top;
+			const spacerHeight = document.body.clientWidth * (innerChild - 1);
+			
+			spacer.style.height = spacerHeight + 'px';
+        
+            const y = window.scrollY;
+            const relativeY = y - innerParent.offsetTop;
+        	
+            if(innerTop <= 0 && relativeY < spacerHeight)
+                inner.style.transform = 'translateX(-' + relativeY + 'px)';
+            else if(relativeY >= spacerHeight)
+            	inner.style.transform = 'translateX(-' + spacerHeight + 'px)';
+            else if(innerTop > 0)
+            	inner.removeAttribute('style');
+        }
+        
+        window.onscroll = scrollX;
+        window.onresize = scrollX;
+    </script>
+</body>
+
+</html>

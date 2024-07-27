@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>deep-dive Content</title>
+  <style>
+    body.no-overflow {
+      overflow: hidden;
+    }
+    .deep-dive {
+    	width: 100%;
+    	overflow-x: hidden;
+    }
+    .deep-dive-container {
+      display: flex;
+      width: 200vw;
+      
+    }
+    .deep-dive-section {
+      width: 100vw;
+      position: relative;
+      will-change: transform;
+      transition: transform 1s ease;
+    }
+    .deep-dive-section:first-child {
+		min-height: 100vh;
+		transition-duration: 1s;
+    }
+    .deep-dive-container.active .deep-dive-section:first-child {
+
+      transition-duration: 1.5s;
+      transform: translateX(-100vw);
+    }
+    .deep-dive-section.deep-dive-panel {
+    
+		background-color: #e0e0e0;
+		position: fixed;
+		top: 0;
+		transform: translateX(100vw);
+    }
+    .deep-dive-container.active .deep-dive-section.deep-dive-panel {
+    	transform: translateX(0);
+    }
+    .deep-dive-content {
+      display: flex;
+      top: 0;
+      height: 100vh;
+      width: 100vw;
+      overflow-x: auto;
+      overflow-y: hidden;
+      -webkit-overflow-scrolling: touch;
+      touch-action: none;
+      position: relative;
+    }
+    .deep-dive-content::-webkit-scrollbar {
+      display: none;
+    }
+    .deep-dive-content {
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .deep-dive-content .content-container {
+      display: flex;
+      width: auto;
+    }
+    .deep-dive-content .content-container > * {
+      width: 100vw;
+      height: 100vh;
+      outline: 1px solid black;
+    }
+    .deep-dive-progress {
+      position: absolute;
+      z-index: 2;
+      bottom: 50px;
+      left: 0;
+      height: 2px;
+      background: green;
+      width: 0;
+    }
+  </style>
+</head>
+<body>
+<div class="deep-dive">
+  <div class="deep-dive-container">
+    <div class="deep-dive-section">
+      <button class="open-btn" data-target="content-container-1">Open 1</button>
+      <button class="open-btn" data-target="content-container-2">Open 2</button>
+      <button class="open-btn" data-target="content-container-3">Open 3</button>
+    </div>
+    <div class="deep-dive-section deep-dive-panel">
+      <button class="close-btn">Close</button>
+      <div class="deep-dive-content">
+        <div class="content-container" id="content-container-1">
+          <div style="width:20vw">Content 1</div>
+          <div style="width:70vw">Content 2</div>
+          <div style="width:100vw">Content 3</div>
+        </div>
+        <div class="content-container" id="content-container-2">
+          <div>Content 4</div>
+          <div>Content 5</div>
+          <div>Content 6</div>
+        </div>
+        <div class="content-container" id="content-container-3">
+          <div>Content 7</div>
+          <div>Content 8</div>
+          <div>Content 9</div>
+        </div>
+      </div>
+      <div class="deep-dive-progress"></div>
+    </div>
+  </div>
+</div>
+
+  <script>
+  // Utility function to show/hide elements
+function displayElements(elements, displayStyle) {
+    elements.forEach(element => {
+        element.style.display = displayStyle;
+    });
+}
+
+// Utility function to update the progress bar
+function updateProgressBar(content, progressBar) {
+    const maxScroll = content.scrollWidth - content.clientWidth;
+    const scrollPercent = (content.scrollLeft / maxScroll) * 100;
+    progressBar.style.width = `${scrollPercent}%`;
+}
+
+// Add a 'click' event listener to each '.open-btn' button
+document.querySelectorAll('.open-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const parentContainer = this.closest('.deep-dive-container');
+        parentContainer.classList.add('active');
+        document.body.classList.add('no-overflow');
+
+        const targetId = this.getAttribute('data-target');
+        const targetElement = document.getElementById(targetId);
+        displayElements(parentContainer.querySelectorAll('.content-container'), 'none');
+        targetElement.style.display = 'flex';
+    });
+});
+
+// Add a 'click' event listener to each '.close-btn' button
+document.querySelectorAll('.close-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        const parentContainer = this.closest('.deep-dive-container');
+        parentContainer.classList.remove('active');
+        document.body.classList.remove('no-overflow');
+        
+        // Commented out based on your original code
+        // displayElements(parentContainer.querySelectorAll('.content-container'), 'flex');
+
+        parentContainer.querySelectorAll('.deep-dive-content').forEach(content => {
+            content.scrollLeft = 0;
+        });
+
+        parentContainer.querySelectorAll('.deep-dive-progress').forEach(bar => {
+            bar.style.width = '0';
+        });
+    });
+});
+
+// Handle scroll events for the deep-dive content
+document.querySelectorAll('.deep-dive-content').forEach((content, index) => {
+    let startPosX;
+    const progressBar = document.querySelectorAll('.deep-dive-progress')[index];
+
+    content.addEventListener('wheel', function(e) {
+        if(e.deltaY != 0) {
+            e.preventDefault();
+            content.scrollLeft += e.deltaY;
+            updateProgressBar(content, progressBar);
+        }
+    });
+
+    content.addEventListener('touchstart', function(e) {
+        startPosX = e.touches[0].clientX;
+    });
+
+    content.addEventListener('touchmove', function(e) {
+        const currentPosX = e.touches[0].clientX;
+        const delta = startPosX - currentPosX;
+        content.scrollLeft += delta;
+        startPosX = currentPosX;
+        e.preventDefault();
+        updateProgressBar(content, progressBar);
+    });
+});
+
+  </script>
+</body>
+</html>
